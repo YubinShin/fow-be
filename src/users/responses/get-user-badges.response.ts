@@ -24,6 +24,9 @@ export class UserBadge {
 }
 
 export class GetUserBadgeResponse {
+    @ApiProperty()
+    user_id :number;
+    
     @ApiProperty({ type: [UserBadge] })
     user_badges: UserBadge[];
 

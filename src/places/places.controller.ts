@@ -15,6 +15,7 @@ import {
   ApiCreatedResponse,
   ApiResponse,
   ApiOperation,
+  ApiQuery,
 } from "@nestjs/swagger";
 import {
   SearchResponse,
@@ -43,40 +44,31 @@ export class PlacesController {
     type: landmarksResponse,
   })
   async getLandmarks() {
-    try {
       const result = await this.placesService.getLandmarks();
-      // 클라이언트에게 결과를 응답으로 보내기
       return result;
-      // return res.status(HttpStatus.OK).json(result);
-    } catch (error) {
-      // return res
-      //   .status(HttpStatus.NOT_FOUND)
-      //   .json({ message: "Error occurred during search." });
-    }
   }
   /** -------------------- */
 
-  /** 간단하게 장소검색하기 */
-  @Get("/simple_search")
-  @ApiOperation({
-    summary: "간단하게 장소검색하기/ query 필요",
-  })
-  @ApiResponse({
-    status: 200,
-    description: "",
-    type: SearchResponse, // 반환 모델을 지정
-  })
-  @ApiResponse({ status: 404, description: "해당 장소 검색 실패" })
-  async jhPlaceSearch(
-    @Query("query") query: string,
-  ): Promise<void> {
-    try {
-      const searchResult = await this.placesService.findSimplePlacesInfo(query);
-      return searchResult;
-      // res.status(HttpStatus.OK).json(searchResult);
-    } catch (error) {
-    }
-  }
+  /** 개발용 : 간단하게 장소검색하기 */
+  // @Get("/simple_search")
+  // @ApiOperation({
+  //   summary: "간단하게 장소검색하기/ query 필요",
+  // })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: "",
+  //   type: SearchResponse, // 반환 모델을 지정
+  // })
+  // @ApiResponse({ status: 404, description: "해당 장소 검색 실패" })
+  // async jhPlaceSearch(
+  //   @Query("query") query: string,
+  // ): Promise<void> {
+  //   try {
+  //     const searchResult = await this.placesService.findSimplePlacesInfo(query);
+  //     return searchResult;
+  //   } catch (error) {
+  //   }
+  // }
   /** -------------------- */
 
   /** 장소 검색하기
@@ -91,6 +83,9 @@ export class PlacesController {
     type: SearchResponse,
   })
   @ApiResponse({ status: 404, description: "해당 장소 검색 실패" })
+  @ApiQuery({ name: 'query', required: true, example: '코엑스' })
+  @ApiQuery({ name: 'x', required: true, example: 127.0588278439012 })
+  @ApiQuery({ name: 'y', required: true, example: 37.51266138067201 })
   @Get("/search")
   async getPlaceSearch(
     @Query("query") query: string,
@@ -107,9 +102,7 @@ export class PlacesController {
           yCoordinate,
           query
         );
-
       return searchResult;
-      // res.status(HttpStatus.OK).json(searchResult);
     } catch (error) {
     }
   }
@@ -162,7 +155,7 @@ export class PlacesController {
   @ApiResponse({
     status: 200,
     description: "",
-    type: PlaceWithPostsResponse,
+    type: [PlaceWithPostsResponse],
   })
   async getPlacePosts(@Param("id", ParseIntPipe) placeId: number) {
     try {
@@ -187,9 +180,11 @@ export class PlacesController {
   })
   @ApiResponse({
     status: 200,
-    type: SearchResponse,
+    type: [SearchResponse],
   })
   @ApiResponse({ status: 404, description: "해당 장소 검색 실패" })
+  @ApiQuery({ name: 'x', required: true, example: 127.0588278439012 })
+  @ApiQuery({ name: 'y', required: true, example: 37.51266138067201 })
   @Get("/current-xy")
   async findPlacesWithXY(
     @Query("x") xCoordinate: number,

@@ -236,9 +236,16 @@ export class AuthService {
   // https://developers.naver.com/docs/login/devguide/devguide.md#5-3-%EB%84%A4%EC%9D%B4%EB%B2%84-%EB%A1%9C%EA%B7%B8%EC%9D%B8-%EC%97%B0%EB%8F%99-%ED%95%B4%EC%A0%9C
   async revokeNaverAccount(oauthToken) {
     try {
+      // 클라이언트 ID와 비밀번호를 안전하게 가져옵니다.
       const naverClientID = await this.config.get("NAVER_CLIENT_ID");
       const naverClientSecret = await this.config.get("NAVER_CLIENT_PW");
-      const postData = `grant_type=delete&client_id=${naverClientID}&client_secret=${naverClientSecret}&access_token=${oauthToken}`;
+
+      // URL 인코딩을 적용합니다.
+      const encodedToken = encodeURIComponent(oauthToken);
+
+      // POST 요청 데이터 구성
+      const postData = `grant_type=delete&client_id=${naverClientID}&client_secret=${naverClientSecret}&access_token=${encodedToken}&service_provider=NAVER`;
+
       const postOptions = {
         url: "https://nid.naver.com/oauth2.0/token",
         method: "POST",
@@ -247,20 +254,36 @@ export class AuthService {
         },
         data: postData,
       };
+
       const httpService = new HttpService();
       const response = await httpService
         .post(postOptions.url, postData, {
           headers: postOptions.headers,
         })
         .toPromise();
-      return response.status;
+        // this.logger.log(response.data);
+      // 추가적인 유효성 검사를 수행할 수 있습니다.
+      if (response.data && response.data.result === 'success') {
+        // 성공적으로 처리된 경우
+        return response.data;
+      } else {
+        // 예상치 못한 응답이 있는 경우
+        throw new Error('Unexpected response from Naver OAuth service.');
+      }
     } catch (error) {
       this.logger.error("revokeNaverAccount 에러:", error);
-      // 에러가 발생한 경우 적절한 오류 메시지 또는 상태 코드를 반환하거나 예외를 다시 던질 수 있습니다.
-      throw new HttpException(
-        "Naver OAuth 토큰 취소 중 오류가 발생했습니다.",
-        HttpStatus.SERVICE_UNAVAILABLE
-      );
+
+      // 에러 유형에 따라 다른 처리를 할 수 있습니다.
+      if (error instanceof HttpException) {
+        // HTTP 관련 예외 처리
+        throw new HttpException(
+          "Naver OAuth 토큰 취소 중 네트워크 오류가 발생했습니다.",
+          HttpStatus.SERVICE_UNAVAILABLE
+        );
+      } else {
+        // 기타 예외 처리
+        throw new Error("Naver OAuth 토큰 취소 중 오류가 발생했습니다.");
+      }
     }
   }
   /** -------------------- */

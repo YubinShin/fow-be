@@ -28,6 +28,7 @@ import { validate } from "class-validator";
 import {
   EditUserResponse,
   GetUserBadgeResponse,
+  GetUserEmailResponse,
   GetUserResponse,
   RegionWithVisitedCountDto,
 } from "./responses";
@@ -125,6 +126,21 @@ export class UsersController {
   }
   /** -------------------- */
 
+  /** 나의 이메일 가져오기 */
+  @Get("me/email")
+  @ApiOperation({ summary: "나의 이메일 조회" })
+  @ApiBearerAuth("access_token")
+  @ApiResponse({
+    status: 200,
+    description: "나의 이메일 조회",
+    type: GetUserEmailResponse,
+  })
+  async getMyEmail(@GetCurrentUserInfo() user) {
+    this.logger.log(`${user["user_email"]} 이메일 조회 호출`);
+    return {user_email : user["user_email"]};
+  }
+  /** -------------------- */
+
   /** 나의 칭호 변경하기 */
   @Patch("me/title")
   @ApiOperation({
@@ -146,7 +162,7 @@ export class UsersController {
       const result = await this.userService.changeTitle(user["sub"], dto);
       this.logger.log(`${user["user_email"]}의 대표 칭호 변경`);
       // return result;
-      return res.status(HttpStatus.OK).json(result);
+      return res.status(HttpStatus.OK).json({message : "대표 칭호 변경에 성공하였습니다."});
     } catch (error) {
       this.logger.log(error);
     }

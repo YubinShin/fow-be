@@ -4,6 +4,11 @@
 
 ![개발 아키텍처](https://github.com/fog-of-war/dev-be/assets/68121478/02549a3d-03a4-4fe3-bd19-933f4ffde006)
 
+
+## ERD
+
+[https://dbdiagram.io/d/FOW-65837c2256d8064ca06aa79e](https://dbdiagram.io/d/FOW-65837c2256d8064ca06aa79)
+
 ## 실행방법
 
 ```
